@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Relatório Visual — Reforma (Pré-produção)</title>
+  <style>
+    body { margin: 0; font-family: system-ui, Arial; background:#111; color:#fff; }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      display:flex; gap:8px; align-items:center; justify-content:center;
+      padding:10px; background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+    }
+    button {
+      border: 1px solid #444; background:#222; color:#fff;
+      padding:8px 12px; border-radius:10px; cursor:pointer;
+    }
+    button:hover { background:#2d2d2d; }
+    .counter { opacity: .85; margin: 0 8px; }
+    main { display:flex; justify-content:center; padding: 10px 10px 30px; }
+    img {
+      max-width: min(1100px, 96vw);
+      max-height: calc(100vh - 90px);
+      width: auto; height: auto;
+      box-shadow: 0 10px 35px rgba(0,0,0,.45);
+      border-radius: 8px;
+      background:#000;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button id="prev">◀︎ Anterior</button>
+    <span class="counter" id="counter"></span>
+    <button id="next">Próximo ▶︎</button>
+    <button id="fs">Tela cheia</button>
+  </header>
+
+  <main>
+    <img id="slide" alt="Página do relatório" />
+  </main>
+
+  <script>
+    const TOTAL = 53;  // mude se não for 53
+    const PAD = 3;     // 001..053
+    const img = document.getElementById('slide');
+    const counter = document.getElementById('counter');
+
+    function pad(n) { return String(n).padStart(PAD, '0'); }
+
+    function getNFromHash() {
+      const m = location.hash.match(/#(\d+)/);
+      const n = m ? parseInt(m[1], 10) : 1;
+      return Math.min(Math.max(n, 1), TOTAL);
+    }
+
+    function setSlide(n) {
+      const safe = Math.min(Math.max(n, 1), TOTAL);
+      img.src = `public/slide-${pad(safe)}.jpg`;
+      counter.textContent = `Página ${safe} / ${TOTAL}`;
+      if (location.hash !== `#${safe}`) location.hash = `#${safe}`;
+    }
+
+    document.getElementById('prev').onclick = () => setSlide(getNFromHash() - 1);
+    document.getElementById('next').onclick = () => setSlide(getNFromHash() + 1);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') setSlide(getNFromHash() - 1);
+      if (e.key === 'ArrowRight') setSlide(getNFromHash() + 1);
+    });
+
+    document.getElementById('fs').onclick = async () => {
+      const el = document.documentElement;
+      if (!document.fullscreenElement) await el.requestFullscreen();
+      else await document.exitFullscreen();
+    };
+
+    window.addEventListener('hashchange', () => setSlide(getNFromHash()));
+    setSlide(getNFromHash());
+  </script>
+</body>
+</html>
